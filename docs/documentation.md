@@ -1,37 +1,225 @@
-# Dokumentasi Teknis Proyek WarnetArcade
+# WarnetArcade Documentation
 
-## Pendahuluan
-WarnetArcade adalah sebuah platform distribusi permainan web yang dirancang khusus sebagai proyek utama portofolio pengembangan perangkat lunak. Sistem ini berfokus murni pada kinerja tinggi, arsitektur yang bersih, dan waktu muat yang sangat cepat. Proyek ini berfungsi sebagai galeri permainan pemain tunggal tanpa adanya fitur interaksi sosial, papan peringkat, atau sistem masuk akun pengguna.
+## Overview
 
-## Tumpukan Teknologi Terpilih
-Antarmuka web dibangun memanfaatkan React dan TypeScript yang dikompilasi menggunakan perkakas Vite. Pengaturan tata letak antarmuka mengandalkan kerangka kerja Tailwind CSS versi tiga untuk mempercepat penulisan gaya. Perpindahan antar halaman diatur sepenuhnya oleh pustaka React Router DOM agar pengguna tidak mengalami muat ulang peramban.
+WarnetArcade is a self-hosted web platform for showcasing and playing browser-compatible games from a single interface.
 
-Peladen belakang ditenagai oleh lingkungan Node.js dengan menggunakan kerangka kerja Fastify. Prisma ORM bertugas menjembatani logika peladen dengan pangkalan data SQLite yang dipilih karena ukurannya yang ringan dan kemudahannya untuk ditingkatkan ke PostgreSQL di masa mendatang. Perangkat lunak Nginx akan digunakan pada tahap penyebaran untuk menyajikan berkas statis permainan secara mandiri.
+The project is designed with a simple architecture that separates the frontend, backend, database, and game assets. The primary goal is to keep the codebase lightweight, maintainable, and easy to extend without introducing unnecessary complexity.
 
-## Arsitektur Sistem dan Alur Kerja
-Sistem dibagi menjadi tiga lapisan utama yang beroperasi secara terpisah demi mencapai kinerja maksimal.
+Current technology stack:
 
-Saat pengguna membuka halaman utama, aplikasi React akan mengirimkan permintaan ke peladen Fastify. Peladen kemudian melakukan kueri ke pangkalan data SQLite untuk mengambil metadata seperti daftar judul dan gambar sampul permainan. Antarmuka web hanya akan menampilkan informasi ringan ini beserta gambar pratayang kepada pengguna. Berkas permainan sama sekali tidak diunduh pada tahap ini.
+* Frontend: React, TypeScript, Vite, Tailwind CSS
+* Backend: Node.js, Fastify
+* Database: SQLite with Prisma ORM
+* API Style: REST
 
-Ketika pengguna menekan tombol main pada salah satu permainan, aplikasi akan membuka halaman pemutar khusus secara dinamis. Halaman ini menggunakan elemen iframe yang mengarah langsung ke berkas utama permainan. Peladen proksi kemudian mengambil alih tugas dengan mengirimkan berkas mesin permainan seperti WebAssembly atau WebGL langsung ke peramban pengguna. Pendekatan iframe ini memastikan bahwa mesin permainan yang berat tidak mengganggu atau membocorkan memori pada aplikasi utama React.
+---
 
-## Struktur Direktori Proyek
-Semua kode dan aset disimpan dalam satu repositori terpusat dengan pembagian tugas yang sangat ketat.
+# Project Structure
 
-Direktori frontend
-Menyimpan seluruh logika antarmuka React, pengaturan rute dinamis, dan konfigurasi Tailwind CSS.
+```
+WarnetArcade/
+├── backend/
+├── frontend/
+├── games/
+├── docs/
+└── ...
+```
 
-Direktori backend
-Menyimpan skema pangkalan data Prisma dan titik akhir antarmuka pemrograman aplikasi Fastify yang bertugas mengirimkan metadata.
+## backend/
 
-Direktori games
-Menyimpan seluruh aset permainan yang sudah diekspor menjadi HTML5 atau WebGL. Berkas di dalam direktori ini dikelompokkan secara ketat berdasarkan mesin pembuatnya seperti unity, scratch, dan wasm untuk mencegah bentrok nama pada berkas utama setiap permainan.
+Contains the REST API responsible for serving game metadata and static game files.
 
-Direktori docs
-Menyimpan seluruh dokumentasi teknis, catatan perencanaan, dan rancangan arsitektur proyek.
+Responsibilities include:
 
-Direktori scripts
-Menyimpan kode bantu untuk keperluan otomasi, pengisian data awal pangkalan data, atau pengaturan peladen.
+* API endpoints
+* Database access
+* Static file serving
+* Request validation
+* Error handling
 
-## Standar Pengembangan
-Seluruh penulisan kode harus dilakukan tanpa menggunakan komentar di dalam berkas kode untuk menjaga kebersihan baris dan kepadatan berkas. Setiap permainan harus dimuat sesuai dengan mesin pembuatnya dan diisolasi dengan ketat demi menjaga stabilitas proyek utama.
+The backend does not contain any business logic beyond game management and asset delivery.
+
+---
+
+## frontend/
+
+Contains the React application that acts as the user interface.
+
+Responsibilities include:
+
+* User interface
+* Routing
+* API communication
+* Game browsing
+* Game launching
+
+The frontend communicates exclusively through the backend API.
+
+---
+
+## games/
+
+Stores playable game files.
+
+Each game has its own directory containing all assets required to run the game.
+
+Example:
+
+```
+games/
+├── game-a/
+│   ├── index.html
+│   ├── assets/
+│   └── ...
+│
+├── game-b/
+│   └── ...
+```
+
+The backend serves these files as static content.
+
+---
+
+## docs/
+
+Contains project documentation.
+
+This directory is intended for technical documentation only.
+
+---
+
+# Backend Architecture
+
+The backend follows a lightweight structure.
+
+```
+backend/
+├── prisma/
+├── src/
+│   ├── routes/
+│   ├── db.ts
+│   └── server.ts
+└── ...
+```
+
+## server.ts
+
+Application entry point.
+
+Responsible for:
+
+* creating the Fastify instance
+* registering plugins
+* registering routes
+* configuring global error handling
+* starting the HTTP server
+
+---
+
+## routes/
+
+Contains API route definitions.
+
+Each file is responsible for a specific API resource.
+
+Current resources include:
+
+* Games
+
+---
+
+## db.ts
+
+Exports the shared Prisma Client instance.
+
+The application uses a single Prisma Client across the backend.
+
+---
+
+## prisma/
+
+Contains the database schema and migration history.
+
+Prisma is used as the only database access layer.
+
+---
+
+# Frontend Architecture
+
+The frontend follows a standard React + Vite structure.
+
+Responsibilities are divided into reusable components, pages, routing, and API communication.
+
+Business logic should remain minimal, with the backend acting as the source of truth for game data.
+
+---
+
+# API
+
+The backend exposes a REST API.
+
+Current endpoints:
+
+```
+GET /games
+GET /games/:slug
+```
+
+The API is intentionally minimal to keep the frontend independent from the database implementation.
+
+---
+
+# Database
+
+SQLite is used as the primary database.
+
+Prisma ORM provides:
+
+* schema definition
+* migrations
+* type-safe queries
+
+The current database stores game metadata only.
+
+Game assets themselves are stored in the `games/` directory.
+
+---
+
+# Static Assets
+
+Playable games are served as static files.
+
+The backend is responsible for exposing the game directory while the frontend is responsible for launching games through their configured entry file.
+
+---
+
+# Design Principles
+
+WarnetArcade follows several architectural principles throughout the project.
+
+## Simplicity First
+
+Avoid unnecessary abstractions, layers, or design patterns unless they provide a clear benefit.
+
+## Separation of Concerns
+
+Frontend, backend, database, and game assets each have clearly defined responsibilities.
+
+## Incremental Development
+
+Features are implemented in small, reviewable tasks to minimize regressions and maintain project stability.
+
+## Maintainability
+
+The codebase should remain approachable for solo development while being easy to understand for future contributors.
+
+---
+
+# Current Status
+
+Backend Foundation: Complete
+
+Frontend: In Development
+
+Project Status: Active

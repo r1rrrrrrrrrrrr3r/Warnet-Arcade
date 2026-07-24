@@ -1,14 +1,8 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { RouterProvider } from 'react-router-dom'
+import router from './router/router'
 
 function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<div className="bg-gray-900 min-h-screen text-white p-8">Halaman Utama GameHub</div>} />
-        <Route path="/play/:slug" element={<div className="bg-black min-h-screen text-white p-8">Halaman Player</div>} />
-      </Routes>
-    </BrowserRouter>
-  )
+  return <RouterProvider router={router} />
 }
 
 export default App
