@@ -1,59 +1,70 @@
-import { useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { fetchGameBySlug, fetchGames, type GameDetail, type GameSummary } from '../lib/api'
 
-interface Game {
+interface HeroSlide {
   slug: string
   title: string
-  genre: string
   engine: string
-  description?: string
-  coverImage?: string | null
+  description: string
+  coverImage: string | null
   accentFrom: string
   accentTo: string
 }
 
-const heroSlides: Game[] = [
-  {
-    slug: 'barathrum',
-    title: 'BARATHRUM',
-    genre: 'Roguelike',
-    engine: 'Unity',
-    description:
-      'Descend into darkness, face endless waves of nightmares, and claw your way back to the surface, if you can.',
-    coverImage: null,
-    accentFrom: '#ff2fb0',
-    accentTo: '#ffb020',
-  },
-  {
-    slug: 'coming-soon-1',
-    title: 'Coming Soon',
-    genre: 'TBA',
-    engine: 'TBA',
-    description: 'A new title is being forged in the arcade backroom. Check back soon for details.',
-    coverImage: null,
-    accentFrom: '#22e5ff',
-    accentTo: '#7c1fd6',
-  },
-  {
-    slug: 'coming-soon-2',
-    title: 'Coming Soon',
-    genre: 'TBA',
-    engine: 'TBA',
-    description: 'Another surprise is queued up next. Stay tuned for the reveal.',
-    coverImage: null,
-    accentFrom: '#ffb020',
-    accentTo: '#a855f7',
-  },
+interface FeaturedGame {
+  slug: string
+  title: string
+  engine: string
+  coverImage: string | null
+  accentFrom: string
+  accentTo: string
+}
+
+const accentPalette = [
+  { from: '#ff2fb0', to: '#ffb020' },
+  { from: '#22e5ff', to: '#7c1fd6' },
+  { from: '#ffb020', to: '#a855f7' },
+  { from: '#a855f7', to: '#22e5ff' },
+  { from: '#ff2fb0', to: '#a855f7' },
+  { from: '#ffb020', to: '#ff8a1f' },
 ]
 
-const featuredGames: Game[] = [
-  { slug: 'barathrum', title: 'Barathrum', genre: 'Roguelike', engine: 'Unity', accentFrom: '#ff2fb0', accentTo: '#ffb020' },
-  { slug: 'night-drifter', title: 'Night Drifter', genre: 'Racing', engine: 'Unity', accentFrom: '#22e5ff', accentTo: '#7c1fd6' },
-  { slug: 'pixel-dungeon', title: 'Pixel Dungeon', genre: 'Adventure', engine: 'Godot', accentFrom: '#ffb020', accentTo: '#7c1fd6' },
-  { slug: 'neon-strike', title: 'Neon Strike', genre: "Shoot 'Em Up", engine: 'Unity', accentFrom: '#ff2fb0', accentTo: '#a855f7' },
-  { slug: 'mecha-core', title: 'Mecha Core', genre: 'Action', engine: 'Unity', accentFrom: '#ffb020', accentTo: '#ff8a1f' },
-  { slug: 'void-walker', title: 'Void Walker', genre: 'Survival', engine: 'Unity', accentFrom: '#a855f7', accentTo: '#22e5ff' },
-]
+const HERO_DESCRIPTION_LIMIT = 160
+
+function truncateDescription(text: string, limit = HERO_DESCRIPTION_LIMIT): string {
+  if (text.length <= limit) return text
+  return `${text.slice(0, limit).trimEnd()}\u2026`
+}
+
+function accentFor(index: number) {
+  return accentPalette[index % accentPalette.length]
+}
+
+function toHeroSlide(game: GameDetail, index: number): HeroSlide {
+  const accent = accentFor(index)
+  return {
+    slug: game.slug,
+    title: game.title.toUpperCase(),
+    engine: game.engine,
+    description: truncateDescription(game.description || 'No description available yet.'),
+    coverImage: game.coverImage,
+    accentFrom: accent.from,
+    accentTo: accent.to,
+  }
+}
+
+function toFeaturedGame(game: GameSummary, index: number): FeaturedGame {
+  const accent = accentFor(index)
+  return {
+    slug: game.slug,
+    title: game.title,
+    engine: game.engine,
+    coverImage: game.coverImage,
+    accentFrom: accent.from,
+    accentTo: accent.to,
+  }
+}
 
 function PlayIcon({ className }: { className?: string }) {
   return (
@@ -111,22 +122,22 @@ function NoCoverIcon({ className }: { className?: string }) {
   )
 }
 
-function HeroCoverPlaceholder({ game }: { game: Game }) {
+function HeroCoverPlaceholder({ slide }: { slide: HeroSlide }) {
   return (
     <div
       className="absolute inset-0"
-      style={{ background: `linear-gradient(150deg, ${game.accentFrom}33, ${game.accentTo}33)` }}
+      style={{ background: `linear-gradient(150deg, ${slide.accentFrom}33, ${slide.accentTo}33)` }}
     >
       <div
         className="absolute inset-0"
         style={{
-          background: `radial-gradient(circle at 25% 20%, ${game.accentFrom}aa, transparent 60%), radial-gradient(circle at 80% 85%, ${game.accentTo}aa, transparent 60%)`,
+          background: `radial-gradient(circle at 25% 20%, ${slide.accentFrom}aa, transparent 60%), radial-gradient(circle at 80% 85%, ${slide.accentTo}aa, transparent 60%)`,
         }}
       />
       <div className="absolute inset-0 shadow-[inset_0_0_40px_rgba(0,0,0,0.6)]" />
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-6 text-center">
         <NoCoverIcon className="h-9 w-9 text-white/40 sm:h-10 sm:w-10" />
-        <p className="font-arcade text-lg text-white/70 sm:text-xl">{game.title}</p>
+        <p className="font-arcade text-lg text-white/70 sm:text-xl">{slide.title}</p>
         <p className="font-display text-[10px] font-semibold uppercase tracking-widest text-white/40 sm:text-xs">
           Cover Coming Soon
         </p>
@@ -135,8 +146,8 @@ function HeroCoverPlaceholder({ game }: { game: Game }) {
   )
 }
 
-function GameCard({ game, isActive }: { game: Game; isActive?: boolean }) {
-  const hasCover = Boolean(game.coverImage && game.coverImage.trim() !== '')
+function GameCard({ game, isActive }: { game: FeaturedGame; isActive?: boolean }) {
+  const hasCover = Boolean(game.coverImage)
 
   return (
     <Link
@@ -182,7 +193,7 @@ function GameCard({ game, isActive }: { game: Game; isActive?: boolean }) {
       <div>
         <p className="truncate font-display text-xs font-bold text-white sm:text-sm">{game.title}</p>
         <p className="truncate text-[9px] uppercase tracking-wide text-white/50 sm:text-[10px]">
-          {game.genre} &middot; {game.engine}
+          {game.engine}
         </p>
       </div>
     </Link>
@@ -194,10 +205,43 @@ function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [animKey, setAnimKey] = useState(0)
 
+  const [games, setGames] = useState<GameSummary[]>([])
+  const [heroSlides, setHeroSlides] = useState<HeroSlide[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const loadGames = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const gameList = await fetchGames()
+      setGames(gameList)
+      setCurrentSlide(0)
+
+      // GET /games does not return "description", which the hero carousel
+      // requires. Fetching full details for the hero candidates only
+      // (capped at 3) is currently the minimum amount of extra requests
+      // possible under the existing API contract.
+      const heroCandidates = gameList.slice(0, 3)
+      const heroDetails = await Promise.all(
+        heroCandidates.map((game) => fetchGameBySlug(game.slug))
+      )
+      setHeroSlides(heroDetails.map(toHeroSlide))
+    } catch {
+      setError('Failed to load the arcade library. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    loadGames()
+  }, [loadGames])
+
   const slide = heroSlides[currentSlide]
-  const hasCover = Boolean(slide.coverImage && slide.coverImage.trim() !== '')
 
   const goToSlide = (index: number) => {
+    if (heroSlides.length === 0) return
     const next = (index + heroSlides.length) % heroSlides.length
     setCurrentSlide(next)
     setAnimKey((k) => k + 1)
@@ -218,6 +262,44 @@ function HomePage() {
 
   const scrollRow = (direction: 'left' | 'right') => {
     rowRef.current?.scrollBy({ left: direction === 'right' ? 260 : -260, behavior: 'smooth' })
+  }
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3 px-4 text-center">
+        <p className="font-display text-xs font-semibold uppercase tracking-[0.3em] text-arcade-cyan sm:text-sm">
+          Loading<span className="animate-pulse">_</span>
+        </p>
+        <p className="text-[11px] text-white/50 sm:text-xs">Booting up the arcade library...</p>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3 px-4 text-center">
+        <p className="font-arcade text-lg text-arcade-magenta sm:text-xl">CONNECTION ERROR</p>
+        <p className="max-w-xs text-[11px] leading-relaxed text-white/60 sm:text-xs">{error}</p>
+        <button
+          type="button"
+          onClick={loadGames}
+          className="neon-btn-outline mt-1 rounded-lg px-5 py-2 text-xs font-semibold uppercase tracking-wide text-white/80"
+        >
+          Retry
+        </button>
+      </div>
+    )
+  }
+
+  if (games.length === 0) {
+    return (
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3 px-4 text-center">
+        <p className="font-arcade text-lg text-arcade-magenta sm:text-xl">ARCADE EMPTY</p>
+        <p className="max-w-xs text-[11px] leading-relaxed text-white/60 sm:text-xs">
+          No games are currently published. Check back soon for new arrivals.
+        </p>
+      </div>
+    )
   }
 
   return (
@@ -244,78 +326,86 @@ function HomePage() {
         </span>
       </div>
 
-      <section
-        className="flex flex-col gap-4 px-3 pb-4 pt-3 sm:px-6 md:flex-row md:items-center md:gap-6"
-        role="region"
-        aria-roledescription="carousel"
-        aria-label="Featured games"
-        tabIndex={0}
-        onKeyDown={handleHeroKeyDown}
-      >
-        <div key={`text-${animKey}`} className="hero-slide-enter flex w-full flex-col gap-2 md:w-2/5">
-          <h2 className="bg-gradient-to-r from-arcade-magenta via-arcade-amber to-arcade-cyan bg-clip-text font-arcade text-2xl leading-tight text-transparent [text-shadow:3px_3px_0_rgba(0,0,0,0.4)] sm:text-3xl">
-            {slide.title}
-          </h2>
-          <p className="font-display text-xs font-semibold uppercase tracking-[0.2em] text-arcade-cyan">
-            {slide.genre} &bull; {slide.engine}
-          </p>
-          <p className="max-w-sm text-xs leading-relaxed text-white/70">{slide.description}</p>
-          <div className="mt-1 flex flex-wrap gap-2">
-            <Link
-              to={`/game/${slide.slug}`}
-              className="neon-btn-play flex items-center gap-1.5 rounded-lg px-4 py-1.5 text-xs font-bold uppercase tracking-wide text-black"
-            >
-              <PlayIcon className="h-2.5 w-2.5" />
-              Play
-            </Link>
-          </div>
-        </div>
-
-        <div
-          key={`media-${animKey}`}
-          className="hero-slide-enter relative aspect-[16/10] w-full overflow-hidden rounded-2xl border border-white/10 md:w-3/5"
+      {slide && (
+        <section
+          className="flex flex-col gap-4 px-3 pb-4 pt-3 sm:px-6 md:flex-row md:items-center md:gap-6"
+          role="region"
+          aria-roledescription="carousel"
+          aria-label="Featured games"
+          tabIndex={0}
+          onKeyDown={handleHeroKeyDown}
         >
-          {hasCover ? (
-            <img
-              src={slide.coverImage as string}
-              alt={`${slide.title} cover art`}
-              className="h-full w-full object-cover"
+          <div key={`text-${animKey}`} className="hero-slide-enter flex w-full flex-col gap-2 md:w-2/5">
+            <h2 className="bg-gradient-to-r from-arcade-magenta via-arcade-amber to-arcade-cyan bg-clip-text font-arcade text-2xl leading-tight text-transparent [text-shadow:3px_3px_0_rgba(0,0,0,0.4)] sm:text-3xl">
+              {slide.title}
+            </h2>
+            <p className="font-display text-xs font-semibold uppercase tracking-[0.2em] text-arcade-cyan">
+              {slide.engine}
+            </p>
+            <p className="max-w-sm text-xs leading-relaxed text-white/70">{slide.description}</p>
+            <div className="mt-1 flex flex-wrap gap-2">
+              <Link
+                to={`/game/${slide.slug}`}
+                className="neon-btn-play flex items-center gap-1.5 rounded-lg px-4 py-1.5 text-xs font-bold uppercase tracking-wide text-black"
+              >
+                <PlayIcon className="h-2.5 w-2.5" />
+                Play
+              </Link>
+            </div>
+          </div>
+
+          <div
+            key={`media-${animKey}`}
+            className="hero-slide-enter relative aspect-[16/10] w-full overflow-hidden rounded-2xl border border-white/10 md:w-3/5"
+          >
+            {slide.coverImage ? (
+              <img
+                src={slide.coverImage}
+                alt={`${slide.title} cover art`}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <HeroCoverPlaceholder slide={slide} />
+            )}
+
+            {heroSlides.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  onClick={prevSlide}
+                  aria-label="Previous featured game"
+                  className="chevron-btn absolute left-2 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-white/70"
+                >
+                  <ChevronIcon direction="left" />
+                </button>
+                <button
+                  type="button"
+                  onClick={nextSlide}
+                  aria-label="Next featured game"
+                  className="chevron-btn absolute right-2 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-white/70"
+                >
+                  <ChevronIcon direction="right" />
+                </button>
+              </>
+            )}
+          </div>
+        </section>
+      )}
+
+      {heroSlides.length > 1 && (
+        <div className="flex justify-center gap-2 pb-4">
+          {heroSlides.map((heroSlide, index) => (
+            <button
+              key={heroSlide.slug}
+              type="button"
+              onClick={() => goToSlide(index)}
+              aria-label={`Go to ${heroSlide.title} slide`}
+              aria-current={index === currentSlide}
+              className={`pagination-dot ${index === currentSlide ? 'is-active' : ''}`}
             />
-          ) : (
-            <HeroCoverPlaceholder game={slide} />
-          )}
-
-          <button
-            type="button"
-            onClick={prevSlide}
-            aria-label="Previous featured game"
-            className="chevron-btn absolute left-2 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-white/70"
-          >
-            <ChevronIcon direction="left" />
-          </button>
-          <button
-            type="button"
-            onClick={nextSlide}
-            aria-label="Next featured game"
-            className="chevron-btn absolute right-2 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-white/70"
-          >
-            <ChevronIcon direction="right" />
-          </button>
+          ))}
         </div>
-      </section>
-
-      <div className="flex justify-center gap-2 pb-4">
-        {heroSlides.map((game, index) => (
-          <button
-            key={game.slug}
-            type="button"
-            onClick={() => goToSlide(index)}
-            aria-label={`Go to ${game.title} slide`}
-            aria-current={index === currentSlide}
-            className={`pagination-dot ${index === currentSlide ? 'is-active' : ''}`}
-          />
-        ))}
-      </div>
+      )}
 
       <section className="px-3 pb-6 sm:px-6">
         <div className="mb-3 flex items-center justify-between">
@@ -345,8 +435,12 @@ function HomePage() {
           ref={rowRef}
           className="flex gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
-          {featuredGames.map((game) => (
-            <GameCard key={game.slug} game={game} isActive={game.slug === heroSlides[currentSlide].slug} />
+          {games.map((game, index) => (
+            <GameCard
+              key={game.slug}
+              game={toFeaturedGame(game, index)}
+              isActive={slide ? game.slug === slide.slug : false}
+            />
           ))}
         </div>
       </section>

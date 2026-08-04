@@ -1,104 +1,23 @@
+import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { ApiError, fetchGameBySlug } from '../lib/api'
 
-interface GameDetail {
+interface GameViewModel {
   slug: string
   title: string
   tagline: string
   engine: string
   genres: string[]
-  description: string[]
-  coverImage?: string | null
+  description: string
+  coverImage: string | null
   accentFrom: string
   accentTo: string
 }
 
-const dummyGames: Record<string, GameDetail> = {
-  barathrum: {
-    slug: 'barathrum',
-    title: 'Barathrum',
-    tagline: 'A turn-based roguelite adventure through mysterious underground ruins.',
-    engine: 'Unity WebGL',
-    genres: ['Roguelite', 'Turn-Based', 'Pixel Art'],
-    description: [
-      'Barathrum drops you into a collapsing underworld where every corridor hides a new threat and every choice reshapes the run ahead. Explore hand-crafted ruins, uncover forgotten relics, and piece together the fate of the civilization that once thrived below.',
-      'Combat unfolds in tense, turn-based encounters that reward careful positioning over twitch reflexes. Chain together abilities, exploit enemy weaknesses, and manage a limited supply of resources as you push deeper into the dark.',
-      'No two descents are the same. Procedurally arranged chambers, shifting hazards, and a growing roster of unlockable classes keep each attempt fresh, whether you\u2019re diving for the first time or chasing a new personal best.',
-    ],
-    coverImage: null,
-    accentFrom: '#ff2fb0',
-    accentTo: '#ffb020',
-  },
-  'night-drifter': {
-    slug: 'night-drifter',
-    title: 'Night Drifter',
-    tagline: 'Outrun the neon night in high-stakes street races through a city that never sleeps.',
-    engine: 'Unity WebGL',
-    genres: ['Racing', 'Arcade', 'Neon'],
-    description: [
-      'Night Drifter puts you behind the wheel of a tuned-up street machine, weaving through rain-slicked highways and neon-drenched back alleys.',
-      'Drift through hairpin turns, dodge traffic, and chase down rivals in time trials built for quick, adrenaline-fueled runs.',
-    ],
-    coverImage: null,
-    accentFrom: '#22e5ff',
-    accentTo: '#7c1fd6',
-  },
-  'pixel-dungeon': {
-    slug: 'pixel-dungeon',
-    title: 'Pixel Dungeon',
-    tagline: 'A charming pixel-art dungeon crawl full of secrets, traps, and forgotten treasure.',
-    engine: 'Godot WebGL',
-    genres: ['Adventure', 'Pixel Art', 'Puzzle'],
-    description: [
-      'Pixel Dungeon sends you crawling through hand-drawn chambers stacked with puzzles, traps, and long-buried loot.',
-      'Every floor hides a new layout and a new mystery, rewarding careful exploration over brute force.',
-    ],
-    coverImage: null,
-    accentFrom: '#ffb020',
-    accentTo: '#7c1fd6',
-  },
-  'neon-strike': {
-    slug: 'neon-strike',
-    title: 'Neon Strike',
-    tagline: "Bullet-soaked arcade mayhem where every second counts and every hit chains your score.",
-    engine: 'Unity WebGL',
-    genres: ["Shoot 'Em Up", 'Arcade', 'Score Attack'],
-    description: [
-      "Neon Strike is a fast, unforgiving shoot 'em up where the screen fills with bullets and the only way out is through.",
-      'Weave through dense enemy patterns, chain combos, and chase the top of the leaderboard one run at a time.',
-    ],
-    coverImage: null,
-    accentFrom: '#ff2fb0',
-    accentTo: '#a855f7',
-  },
-  'mecha-core': {
-    slug: 'mecha-core',
-    title: 'Mecha Core',
-    tagline: 'Pilot a customizable war machine through shattered battlefields in fast, brutal 3D combat.',
-    engine: 'Unity WebGL',
-    genres: ['Action', 'Mech Combat', '3D'],
-    description: [
-      'Mecha Core drops you into the cockpit of a heavily armed mech built for close-quarters destruction.',
-      'Swap loadouts between missions and take on increasingly hostile battlefields across a shattered warzone.',
-    ],
-    coverImage: null,
-    accentFrom: '#ffb020',
-    accentTo: '#ff8a1f',
-  },
-  'void-walker': {
-    slug: 'void-walker',
-    title: 'Void Walker',
-    tagline: 'Scavenge, craft, and survive alone on a hostile world at the edge of known space.',
-    engine: 'Unity WebGL',
-    genres: ['Survival', 'Sci-Fi', 'Exploration'],
-    description: [
-      'Void Walker strands you on a hostile, resource-starved world with nothing but your wits and a failing suit.',
-      'Scavenge the wreckage, craft what you need, and survive long enough to find a way off-world.',
-    ],
-    coverImage: null,
-    accentFrom: '#a855f7',
-    accentTo: '#22e5ff',
-  },
-}
+const TAGLINE_PLACEHOLDER = 'Jump into the action and see what the arcade has in store.'
+const GENRE_PLACEHOLDER = 'Arcade'
+const DEFAULT_ACCENT_FROM = '#a855f7'
+const DEFAULT_ACCENT_TO = '#22e5ff'
 
 function PlayIcon({ className }: { className?: string }) {
   return (
@@ -128,7 +47,7 @@ function NoCoverIcon({ className }: { className?: string }) {
   )
 }
 
-function GameCoverPlaceholder({ game }: { game: GameDetail }) {
+function GameCoverPlaceholder({ game }: { game: GameViewModel }) {
   return (
     <div
       className="absolute inset-0"
@@ -168,8 +87,89 @@ function Badge({ label, tone }: { label: string; tone: 'engine' | 'genre' }) {
 
 function GamePage() {
   const { slug: routeSlug } = useParams()
-  const game: GameDetail = dummyGames[routeSlug ?? ''] ?? dummyGames.barathrum
-  const hasCover = Boolean(game.coverImage && game.coverImage.trim() !== '')
+
+  const [game, setGame] = useState<GameViewModel | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [notFound, setNotFound] = useState(false)
+
+  const loadGame = useCallback(async () => {
+    if (!routeSlug) return
+    setLoading(true)
+    setError(null)
+    setNotFound(false)
+    try {
+      const data = await fetchGameBySlug(routeSlug)
+      setGame({
+        slug: data.slug,
+        title: data.title,
+        tagline: TAGLINE_PLACEHOLDER,
+        engine: data.engine,
+        genres: [GENRE_PLACEHOLDER],
+        description: data.description,
+        coverImage: data.coverImage,
+        accentFrom: DEFAULT_ACCENT_FROM,
+        accentTo: DEFAULT_ACCENT_TO,
+      })
+    } catch (err) {
+      setGame(null)
+      if (err instanceof ApiError && err.status === 404) {
+        setNotFound(true)
+        setError('This game does not exist or is no longer available.')
+      } else {
+        setError('Failed to load this game. Please try again.')
+      }
+    } finally {
+      setLoading(false)
+    }
+  }, [routeSlug])
+
+  useEffect(() => {
+    loadGame()
+  }, [loadGame])
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3 px-4 text-center">
+        <p className="font-display text-xs font-semibold uppercase tracking-[0.3em] text-arcade-cyan sm:text-sm">
+          Loading<span className="animate-pulse">_</span>
+        </p>
+        <p className="text-[11px] text-white/50 sm:text-xs">Fetching game data...</p>
+      </div>
+    )
+  }
+
+  if (error || !game) {
+    return (
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3 px-4 text-center">
+        <p className="font-arcade text-lg text-arcade-magenta sm:text-xl">
+          {notFound ? 'GAME NOT FOUND' : 'CONNECTION ERROR'}
+        </p>
+        <p className="max-w-xs text-[11px] leading-relaxed text-white/60 sm:text-xs">
+          {error ?? 'Something went wrong while loading this game.'}
+        </p>
+        <div className="mt-1 flex flex-wrap justify-center gap-2.5">
+          {!notFound && (
+            <button
+              type="button"
+              onClick={loadGame}
+              className="neon-btn-outline rounded-lg px-5 py-2 text-xs font-semibold uppercase tracking-wide text-white/80"
+            >
+              Retry
+            </button>
+          )}
+          <Link
+            to="/"
+            className="neon-btn-outline rounded-lg px-5 py-2 text-xs font-semibold uppercase tracking-wide text-white/80"
+          >
+            Back to Home
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  const hasCover = Boolean(game.coverImage)
 
   return (
     <div className="flex flex-col gap-6 px-3 py-4 sm:px-6 sm:py-6 md:px-8">
@@ -207,11 +207,7 @@ function GamePage() {
             About This Game
           </h2>
           <div className="max-w-3xl space-y-3">
-            {game.description.map((paragraph, index) => (
-              <p key={index} className="text-xs leading-relaxed text-white/70 sm:text-sm">
-                {paragraph}
-              </p>
-            ))}
+            <p className="text-xs leading-relaxed text-white/70 sm:text-sm">{game.description}</p>
           </div>
         </div>
 

@@ -8,9 +8,9 @@ async function main() {
       slug: 'cmd-rpg',
       title: 'CMD RPG',
       description: 'Permainan RPG berbasis command line klasik dengan sistem pertarungan turn-based.',
-      coverImage: '/games/cpp/cmd-rpg/cover.png',
-      engine: 'C++',
-      entryFile: '/games/cpp/cmd-rpg/index.html',
+      coverImage: '/games/cmd-rpg/cover.png',
+      engine: 'WebAssembly',
+      entryFile: '/games/cmd-rpg/game/index.html',
       featured: false,
       published: true
     },
@@ -18,9 +18,9 @@ async function main() {
       slug: 'scratch-demo',
       title: 'Scratch Demo',
       description: 'Demonstrasi interaktif logika pemrograman dasar.',
-      coverImage: '/games/scratch/demo/cover.png',
+      coverImage: '/games/scratch-demo/cover.png',
       engine: 'Scratch',
-      entryFile: '/games/scratch/demo/index.html',
+      entryFile: '/games/scratch-demo/game/index.html',
       featured: false,
       published: true
     },
@@ -28,9 +28,9 @@ async function main() {
       slug: 'unity-demo',
       title: 'Unity Demo',
       description: 'Prototipe permainan 3D sederhana dengan interaksi fisika dasar.',
-      coverImage: '/games/unity/demo/cover.png',
+      coverImage: '/games/unity-demo/cover.png',
       engine: 'Unity WebGL',
-      entryFile: '/games/unity/demo/index.html',
+      entryFile: '/games/unity-demo/game/index.html',
       featured: true,
       published: true
     }
@@ -39,7 +39,7 @@ async function main() {
   for (const game of games) {
     await prisma.game.upsert({
       where: { slug: game.slug },
-      update: {},
+      update: game,
       create: game
     })
   }
