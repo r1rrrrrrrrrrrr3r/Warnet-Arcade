@@ -10,6 +10,7 @@ export interface GameSummary {
 
 export interface GameDetail extends GameSummary {
   description: string
+  devComment: string
   entryFile: string
   featured: boolean
 }
@@ -50,6 +51,7 @@ interface RawGameSummary {
 
 interface RawGameDetail extends RawGameSummary {
   description: string
+  devComment: string
   entryFile: string
   featured: boolean
 }

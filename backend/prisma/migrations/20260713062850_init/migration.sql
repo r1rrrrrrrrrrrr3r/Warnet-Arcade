@@ -15,3 +15,6 @@ CREATE TABLE "Game" (
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Game_slug_key" ON "Game"("slug");
+
+-- AlterTable
+ALTER TABLE "Game" ADD COLUMN "devComment" TEXT NOT NULL DEFAULT '';

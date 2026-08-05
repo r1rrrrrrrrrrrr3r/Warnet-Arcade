@@ -110,7 +110,7 @@ const ArcadeRuntime = forwardRef<ArcadeRuntimeHandle, ArcadeRuntimeProps>(
             key={`${entryFile}-${attempt}`}
             src={entryFile}
             title={title}
-            className="h-full w-full border-0"
+            className="block h-full w-full border-0"
             allow="fullscreen; autoplay"
             onLoad={() => updateStatus('ready')}
             onError={() => updateStatus('error')}

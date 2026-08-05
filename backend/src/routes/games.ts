@@ -32,7 +32,7 @@ export default async function gameRoutes(server: FastifyInstance) {
     }
   }, async (request, reply) => {
     const { slug } = request.params as { slug: string };
-    
+
     const game = await prisma.game.findUnique({
       where: { slug }
     });
@@ -54,6 +54,7 @@ export default async function gameRoutes(server: FastifyInstance) {
       title: game.title,
       slug: game.slug,
       description: game.description,
+      devComment: game.devComment,
       coverImage: game.coverImage,
       engine: game.engine,
       entryFile: game.entryFile,

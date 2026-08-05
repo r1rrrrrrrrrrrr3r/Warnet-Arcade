@@ -12,6 +12,7 @@ model Game {
   title       String
   slug        String   @unique
   description String
+  devComment  String   @default("")
   coverImage  String
   engine      String
   entryFile   String

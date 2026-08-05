@@ -9,8 +9,8 @@ const server = Fastify({ logger: true });
 server.register(cors);
 
 server.register(fastifyStatic, {
-  root: path.join(__dirname, '../public'),
-  prefix: '/',
+  root: path.join(__dirname, "../../games"),
+  prefix: "/games/",
 });
 
 server.setNotFoundHandler((request, reply) => {

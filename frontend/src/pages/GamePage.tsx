@@ -8,7 +8,7 @@ interface GameViewModel {
   tagline: string
   engine: string
   genres: string[]
-  description: string
+  devComment: string
   coverImage: string | null
   accentFrom: string
   accentTo: string
@@ -103,10 +103,10 @@ function GamePage() {
       setGame({
         slug: data.slug,
         title: data.title,
-        tagline: TAGLINE_PLACEHOLDER,
+        tagline: data.description || TAGLINE_PLACEHOLDER,
         engine: data.engine,
         genres: [GENRE_PLACEHOLDER],
-        description: data.description,
+        devComment: data.devComment,
         coverImage: data.coverImage,
         accentFrom: DEFAULT_ACCENT_FROM,
         accentTo: DEFAULT_ACCENT_TO,
@@ -204,49 +204,23 @@ function GamePage() {
         <div>
           <h2 className="mb-2 font-display text-[11px] font-semibold uppercase tracking-[0.25em] text-arcade-cyan">
             <span className="mr-1.5 text-arcade-amber">&bull;</span>
-            About This Game
+            Developer Comment
           </h2>
           <div className="max-w-3xl space-y-3">
-            <p className="text-xs leading-relaxed text-white/70 sm:text-sm">{game.description}</p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
-          <div className="stat-box px-2.5 py-1.5">
-            <p className="font-display text-[9px] font-semibold uppercase tracking-widest text-arcade-magenta">
-              Players
+            <p className="text-xs leading-relaxed text-white/70 sm:text-sm">
+              {game.devComment || 'No developer notes have been added for this project yet.'}
             </p>
-            <p className="font-display text-sm font-bold text-white">1-4 Players</p>
-          </div>
-          <div className="stat-box px-2.5 py-1.5">
-            <p className="font-display text-[9px] font-semibold uppercase tracking-widest text-arcade-cyan">
-              Difficulty
-            </p>
-            <p className="font-display text-sm font-bold text-white">Nightmare</p>
-          </div>
-          <div className="stat-box px-2.5 py-1.5">
-            <p className="font-display text-[9px] font-semibold uppercase tracking-widest text-arcade-amber">
-              Playtime
-            </p>
-            <p className="font-display text-sm font-bold text-white">6-10 Hours</p>
-          </div>
-          <div className="stat-box px-2.5 py-1.5">
-            <p className="font-display text-[9px] font-semibold uppercase tracking-widest text-arcade-cyan">
-              Status
-            </p>
-            <p className="font-display text-sm font-bold text-white">Now Playing</p>
           </div>
         </div>
 
         <div className="flex flex-col gap-3 pb-2 sm:flex-row sm:items-center">
-          <button
-            type="button"
-            onClick={() => console.log(`Play requested for ${game.slug}`)}
+          <Link
+            to={`/play/${game.slug}`}
             className="neon-btn-play flex items-center justify-center gap-2 rounded-lg px-6 py-2.5 text-sm font-bold uppercase tracking-wide text-black"
           >
             <PlayIcon className="h-3 w-3" />
             Play Now
-          </button>
+          </Link>
           <Link
             to="/"
             className="neon-btn-outline flex items-center justify-center rounded-lg px-6 py-2.5 text-sm font-semibold uppercase tracking-wide text-white/80"
