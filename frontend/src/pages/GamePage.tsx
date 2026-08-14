@@ -207,7 +207,7 @@ function GamePage() {
             Developer Comment
           </h2>
           <div className="max-w-3xl space-y-3">
-            <p className="text-xs leading-relaxed text-white/70 sm:text-sm">
+            <p className="whitespace-pre-line text-xs leading-relaxed text-white/70 sm:text-sm">
               {game.devComment || 'No developer notes have been added for this project yet.'}
             </p>
           </div>
@@ -215,17 +215,17 @@ function GamePage() {
 
         <div className="flex flex-col gap-3 pb-2 sm:flex-row sm:items-center">
           <Link
+            to="/"
+            className="neon-btn-outline flex items-center justify-center rounded-lg px-6 py-2.5 text-sm font-semibold uppercase tracking-wide text-white/80"
+          >
+            &larr; Back to Home
+          </Link>
+          <Link
             to={`/play/${game.slug}`}
             className="neon-btn-play flex items-center justify-center gap-2 rounded-lg px-6 py-2.5 text-sm font-bold uppercase tracking-wide text-black"
           >
             <PlayIcon className="h-3 w-3" />
             Play Now
-          </Link>
-          <Link
-            to="/"
-            className="neon-btn-outline flex items-center justify-center rounded-lg px-6 py-2.5 text-sm font-semibold uppercase tracking-wide text-white/80"
-          >
-            &larr; Back to Home
           </Link>
         </div>
       </section>

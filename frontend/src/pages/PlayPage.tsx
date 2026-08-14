@@ -143,7 +143,7 @@ function PlayPage() {
   const statusLabel = displayStatus === 'loading' ? 'Loading' : displayStatus === 'error' ? 'Error' : 'Ready'
 
   return (
-    <div className="flex min-h-full flex-col gap-3 px-3 py-3 sm:gap-4 sm:px-6 sm:py-4 md:px-8">
+    <div className="flex h-full flex-col gap-3 px-3 py-3 sm:gap-4 sm:px-6 sm:py-4 md:px-8">
       <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-2.5">
         <h1 className="font-arcade text-base text-arcade-magenta sm:text-lg md:text-xl">{displayTitle}</h1>
         <div className="flex items-center gap-2">
