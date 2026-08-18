@@ -18,3 +18,6 @@ CREATE UNIQUE INDEX "Game_slug_key" ON "Game"("slug");
 
 -- AlterTable
 ALTER TABLE "Game" ADD COLUMN "devComment" TEXT NOT NULL DEFAULT '';
+
+-- AlterTable
+ALTER TABLE "Game" ADD COLUMN "howToPlay" TEXT NOT NULL DEFAULT '';

@@ -54,6 +54,7 @@ export default async function gameRoutes(server: FastifyInstance) {
       title: game.title,
       slug: game.slug,
       description: game.description,
+      howToPlay: game.howToPlay,
       devComment: game.devComment,
       coverImage: game.coverImage,
       engine: game.engine,

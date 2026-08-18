@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ApiError, fetchGameBySlug } from '../lib/api'
+import { RichText } from '../components/RichText'
 
 interface GameViewModel {
   slug: string
@@ -8,6 +9,7 @@ interface GameViewModel {
   tagline: string
   engine: string
   genres: string[]
+  howToPlay: string
   devComment: string
   coverImage: string | null
   accentFrom: string
@@ -106,6 +108,7 @@ function GamePage() {
         tagline: data.description || TAGLINE_PLACEHOLDER,
         engine: data.engine,
         genres: [GENRE_PLACEHOLDER],
+        howToPlay: data.howToPlay,
         devComment: data.devComment,
         coverImage: data.coverImage,
         accentFrom: DEFAULT_ACCENT_FROM,
@@ -190,7 +193,7 @@ function GamePage() {
           <h1 className="bg-gradient-to-r from-arcade-magenta via-arcade-amber to-arcade-cyan bg-clip-text font-arcade text-2xl leading-tight text-transparent [text-shadow:3px_3px_0_rgba(0,0,0,0.4)] sm:text-3xl md:text-4xl">
             {game.title}
           </h1>
-          <p className="max-w-md text-xs leading-relaxed text-white/70 sm:text-sm">{game.tagline}</p>
+          <RichText text={game.tagline} className="max-w-md" />
           <div className="flex flex-wrap justify-center gap-2 md:justify-start">
             <Badge label={game.engine} tone="engine" />
             {game.genres.map((genre) => (
@@ -204,12 +207,32 @@ function GamePage() {
         <div>
           <h2 className="mb-2 font-display text-[11px] font-semibold uppercase tracking-[0.25em] text-arcade-cyan">
             <span className="mr-1.5 text-arcade-amber">&bull;</span>
+            How to Play
+          </h2>
+          <div className="max-w-3xl">
+            {game.howToPlay ? (
+              <RichText text={game.howToPlay} />
+            ) : (
+              <p className="text-xs leading-relaxed text-white/70 sm:text-sm">
+                How to play instructions have not been added for this project yet.
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div>
+          <h2 className="mb-2 font-display text-[11px] font-semibold uppercase tracking-[0.25em] text-arcade-cyan">
+            <span className="mr-1.5 text-arcade-amber">&bull;</span>
             Developer Comment
           </h2>
-          <div className="max-w-3xl space-y-3">
-            <p className="whitespace-pre-line text-xs leading-relaxed text-white/70 sm:text-sm">
-              {game.devComment || 'No developer notes have been added for this project yet.'}
-            </p>
+          <div className="max-w-3xl">
+            {game.devComment ? (
+              <RichText text={game.devComment} />
+            ) : (
+              <p className="text-xs leading-relaxed text-white/70 sm:text-sm">
+                No developer notes have been added for this project yet.
+              </p>
+            )}
           </div>
         </div>
 
