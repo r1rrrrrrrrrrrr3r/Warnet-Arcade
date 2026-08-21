@@ -11,6 +11,7 @@ interface ArcadeRuntimeProps {
   entryFile: string
   title: string
   onStatusChange?: (status: RuntimeStatus) => void
+  lockRenderResolution?: boolean
 }
 
 function WarningIcon({ className }: { className?: string }) {
@@ -33,15 +34,27 @@ function WarningIcon({ className }: { className?: string }) {
 }
 
 const ArcadeRuntime = forwardRef<ArcadeRuntimeHandle, ArcadeRuntimeProps>(
-  ({ entryFile, title, onStatusChange }, ref) => {
+  ({ entryFile, title, onStatusChange, lockRenderResolution = false }, ref) => {
     const containerRef = useRef<HTMLDivElement>(null)
     const [status, setStatus] = useState<RuntimeStatus>('loading')
     const [validated, setValidated] = useState(false)
     const [attempt, setAttempt] = useState(0)
+    const [isFullscreen, setIsFullscreen] = useState(false)
+    const [fullscreenScale, setFullscreenScale] = useState(1)
+
+    const lockedRenderSizeRef = useRef<{ width: number; height: number } | null>(null)
 
     const updateStatus = (next: RuntimeStatus) => {
       setStatus(next)
       onStatusChange?.(next)
+    }
+
+    const recalcFullscreenScale = () => {
+      const el = containerRef.current
+      const locked = lockedRenderSizeRef.current
+      if (!el || !locked || locked.width === 0 || locked.height === 0) return
+      const scale = Math.min(el.clientWidth / locked.width, el.clientHeight / locked.height)
+      setFullscreenScale(scale > 0 ? scale : 1)
     }
 
     useEffect(() => {
@@ -49,17 +62,21 @@ const ArcadeRuntime = forwardRef<ArcadeRuntimeHandle, ArcadeRuntimeProps>(
       setValidated(false)
       updateStatus('loading')
 
-      fetch(entryFile, { method: 'HEAD' })
+      fetch(entryFile, { method: 'HEAD', cache: 'no-store' })
         .then((response) => {
           if (cancelled) return
           if (response.ok) {
             setValidated(true)
           } else {
+            console.error(
+              `ArcadeRuntime: entry file check failed for "${entryFile}" (HTTP ${response.status})`
+            )
             updateStatus('error')
           }
         })
-        .catch(() => {
+        .catch((err) => {
           if (!cancelled) {
+            console.error(`ArcadeRuntime: entry file check errored for "${entryFile}"`, err)
             updateStatus('error')
           }
         })
@@ -70,12 +87,37 @@ const ArcadeRuntime = forwardRef<ArcadeRuntimeHandle, ArcadeRuntimeProps>(
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [entryFile, attempt])
 
+    useEffect(() => {
+      const handleFullscreenChange = () => {
+        const active = document.fullscreenElement === containerRef.current
+        setIsFullscreen(active)
+        if (active && lockRenderResolution) recalcFullscreenScale()
+      }
+      document.addEventListener('fullscreenchange', handleFullscreenChange)
+      return () => {
+        document.removeEventListener('fullscreenchange', handleFullscreenChange)
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [lockRenderResolution])
+
+    useEffect(() => {
+      if (!isFullscreen || !lockRenderResolution) return
+      window.addEventListener('resize', recalcFullscreenScale)
+      return () => window.removeEventListener('resize', recalcFullscreenScale)
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isFullscreen, lockRenderResolution])
+
     useImperativeHandle(ref, () => ({
       requestFullscreen: async () => {
         const el = containerRef.current
         if (!el) return
 
         if (!document.fullscreenElement) {
+          if (lockRenderResolution) {
+            const rect = el.getBoundingClientRect()
+            lockedRenderSizeRef.current = { width: rect.width, height: rect.height }
+          }
+
           if (el.requestFullscreen) {
             try {
               await el.requestFullscreen()
@@ -94,10 +136,13 @@ const ArcadeRuntime = forwardRef<ArcadeRuntimeHandle, ArcadeRuntimeProps>(
       },
     }))
 
+    const locked = lockedRenderSizeRef.current
+    const useLockedSize = isFullscreen && lockRenderResolution && locked !== null
+
     return (
       <div
         ref={containerRef}
-        className="relative h-full w-full overflow-hidden rounded-xl border border-white/10 bg-black"
+        className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-black"
       >
         <div
           className="pointer-events-none absolute inset-0"
@@ -110,10 +155,20 @@ const ArcadeRuntime = forwardRef<ArcadeRuntimeHandle, ArcadeRuntimeProps>(
             key={`${entryFile}-${attempt}`}
             src={entryFile}
             title={title}
-            className="block h-full w-full border-0"
             allow="fullscreen; autoplay"
             onLoad={() => updateStatus('ready')}
             onError={() => updateStatus('error')}
+            className={useLockedSize ? 'block border-0' : 'block h-full w-full border-0'}
+            style={
+              useLockedSize && locked
+                ? {
+                    width: locked.width,
+                    height: locked.height,
+                    transform: `scale(${fullscreenScale})`,
+                    transformOrigin: 'center center',
+                  }
+                : undefined
+            }
           />
         )}
 
@@ -136,6 +191,15 @@ const ArcadeRuntime = forwardRef<ArcadeRuntimeHandle, ArcadeRuntimeProps>(
             <p className="max-w-xs text-[11px] leading-relaxed text-white/60 sm:text-xs">
               The selected game could not be started. Please try again.
             </p>
+          </div>
+        )}
+
+        {!isFullscreen && (
+          <div className="crt-overlay">
+            <div className="crt-scanlines" />
+            <div className="crt-reflection" />
+            <div className="crt-vignette" />
+            <div className="crt-flicker" />
           </div>
         )}
       </div>

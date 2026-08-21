@@ -7,6 +7,7 @@ type BadgeTone = 'engine' | RuntimeStatus
 
 const DEFAULT_ERROR_MESSAGE = 'Something went wrong. Please return to the Game Page and try again.'
 const NOT_FOUND_MESSAGE = 'This game could not be found. Please return to the Game Page and try again.'
+const FIXED_ASPECT_ENGINES = /scratch|turbowarp/i
 
 function PlayIcon({ className }: { className?: string }) {
   return (
@@ -141,6 +142,7 @@ function PlayPage() {
   const displayTitle = (game?.title ?? gameSlug.replace(/-/g, ' ')).toUpperCase()
   const displayStatus: RuntimeStatus = pageStatus === 'ready' ? runtimeStatus : pageStatus
   const statusLabel = displayStatus === 'loading' ? 'Loading' : displayStatus === 'error' ? 'Error' : 'Ready'
+  const useFixedAspectStage = Boolean(game && FIXED_ASPECT_ENGINES.test(game.engine))
 
   return (
     <div className="flex h-full flex-col gap-3 px-3 py-3 sm:gap-4 sm:px-6 sm:py-4 md:px-8">
@@ -179,12 +181,27 @@ function PlayPage() {
         )}
 
         {pageStatus === 'ready' && game && (
-          <ArcadeRuntime
-            ref={runtimeRef}
-            entryFile={game.entryFile}
-            title={game.title}
-            onStatusChange={setRuntimeStatus}
-          />
+          useFixedAspectStage ? (
+            <div className="flex h-full w-full items-center justify-center">
+              <div className="aspect-[4/3] h-full max-w-full">
+                <ArcadeRuntime
+                  ref={runtimeRef}
+                  entryFile={game.entryFile}
+                  title={game.title}
+                  onStatusChange={setRuntimeStatus}
+                  lockRenderResolution={useFixedAspectStage}
+                />
+              </div>
+            </div>
+          ) : (
+            <ArcadeRuntime
+              ref={runtimeRef}
+              entryFile={game.entryFile}
+              title={game.title}
+              onStatusChange={setRuntimeStatus}
+              lockRenderResolution={useFixedAspectStage}
+            />
+          )
         )}
       </div>
 
