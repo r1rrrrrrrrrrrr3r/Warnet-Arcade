@@ -1,1 +1,19 @@
-<!doctypehtml><html><head><meta charset=utf-8><meta content="width=device-width,initial-scale=1"name=viewport><title>A Very Normal RPG Game</title><link href=vendor/xterm.css rel=stylesheet><style>body,html{margin:0;height:100%;background:#000;overflow:hidden}#terminal-container{width:100%;height:100%;padding:6px;box-sizing:border-box}</style></head><body><div id=terminal-container></div><script src=vendor/xterm.js></script><script src=vendor/addon-fit.js></script><script>var term=new Terminal({convertEol:!0,cursorBlink:!0,fontFamily:"monospace",fontSize:14,theme:{background:"#000000"}}),fitAddon=new FitAddon.FitAddon;term.loadAddon(fitAddon),term.open(document.getElementById("terminal-container")),fitAddon.fit(),window.addEventListener("resize",(function(){fitAddon.fit()}));var Module={print:function(n){term.writeln(n)},printErr:function(n){term.writeln(n)},onExit:function(){term.writeln("\r\n[process exited]")}}</script><script src=pre.js></script><script src=index.js async></script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Very Normal RPG Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="terminal">
+        <div id="output"></div>
+        <div id="input-line">
+            <span id="prompt">></span>
+            <input type="text" id="command-input" autocomplete="off" autofocus>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
