@@ -1,0 +1,59 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>A Very Normal RPG Game</title>
+  <link rel="stylesheet" href="vendor/xterm.css" />
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: #000;
+      overflow: hidden;
+    }
+    #terminal-container {
+      width: 100%;
+      height: 100%;
+      padding: 6px;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+<body>
+  <div id="terminal-container"></div>
+
+  <script src="vendor/xterm.js"></script>
+  <script src="vendor/xterm-addon-fit.js"></script>
+  <script>
+    var term = new Terminal({
+      convertEol: true,
+      cursorBlink: true,
+      fontFamily: "monospace",
+      fontSize: 14,
+      theme: { background: "#000000" }
+    });
+    var fitAddon = new FitAddon.FitAddon();
+    term.loadAddon(fitAddon);
+    term.open(document.getElementById("terminal-container"));
+    fitAddon.fit();
+    window.addEventListener("resize", function () {
+      fitAddon.fit();
+    });
+
+    var Module = {
+      print: function (text) {
+        term.writeln(text);
+      },
+      printErr: function (text) {
+        term.writeln(text);
+      },
+      onExit: function () {
+        term.writeln("\r\n[process exited]");
+      }
+    };
+  </script>
+  <script src="pre.js"></script>
+  {{{ SCRIPT }}}
+</body>
+</html>

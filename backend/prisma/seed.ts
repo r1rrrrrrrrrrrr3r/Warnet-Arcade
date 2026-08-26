@@ -141,6 +141,21 @@ async function main() {
       featured: false,
       published: true,
     },
+    {
+      slug: "a-very-normal-rpg",
+      title: "A Very Normal RPG Game",
+      description:
+        "A Very Normal RPG Game is a **text-driven, turn-based RPG** compiled straight from C++ into your browser. Explore, fight, shop, and level up through a classic terminal menu, facing everything from mundane {{cyan}}Thieves{{/cyan}} and {{cyan}}Guards{{/cyan}} to absurd {{amber}}Meteors{{/amber}} and {{amber}}Sentient Toilets{{/amber}}, all the way up to mythological {{magenta}}Boss{{/magenta}} encounters. Manage your health with potions, upgrade your stats between levels, and see how far a run takes you before the RNG catches up.",
+      howToPlay:
+        "**The Goal**\n\nSurvive as long as you can, leveling up and growing stronger with every enemy you defeat.\n\n**Menu Options**\n\n- **Explore and Fight Enemies**: encounter a random enemy and trade attacks until one of you falls\n- **Enter the Shop**: buy Health Potions for 15 money, or sell them back for 5\n- **Upgrade Stats**: once per level, boost your Health, Attack, or Defense at random\n- **View Player Stats**: check your current Level, XP, Health, Attack, Defense, and Money\n- **Drink Potion**: heal using a potion from your bag, if you have one\n- **Stop Playing**: exit the simulation\n\nType the number of your choice into the terminal and press Enter.",
+      devComment:
+        "This one's a little different from the rest of the arcade: it started life as a plain C++ console program with no browser in mind at all. Getting it running here meant compiling it to {{cyan}}WebAssembly{{/cyan}} with Emscripten and wiring its blocking `cin`/`cout` straight into a terminal emulator, with {{amber}}zero changes{{/amber}} to the original game logic.",
+      coverImage: "/games/a-very-normal-rpg/cover.png",
+      engine: "WebAssembly",
+      entryFile: "/games/a-very-normal-rpg/index.html",
+      featured: false,
+      published: true,
+    },
   ];
 
   await prisma.game.createMany({
