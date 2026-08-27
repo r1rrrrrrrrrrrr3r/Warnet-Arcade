@@ -1,19 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A Very Normal RPG Game</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>A Very Normal RPG</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="terminal">
-        <div id="output"></div>
-        <div id="input-line">
-            <span id="prompt">></span>
-            <input type="text" id="command-input" autocomplete="off" autofocus>
-        </div>
+  <div class="terminal">
+    <div class="titlebar"><span>a-very-normal-rpg.exe</span><span>v2.0</span></div>
+    <div id="output" class="output"></div>
+    <div class="input-row">
+      <span class="prompt-symbol">&gt;</span>
+      <input id="command-input" type="text" autofocus placeholder="type a command and press enter" autocomplete="off">
     </div>
-    <script src="game.js"></script>
+  </div>
+
+<script src="game.js"></script>
 </body>
 </html>
