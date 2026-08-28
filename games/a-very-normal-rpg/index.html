@@ -10,7 +10,7 @@
 </head>
 <body>
   <div class="terminal">
-    <div class="titlebar"><span>a-very-normal-rpg.exe</span><span>v2.0</span></div>
+    <div class="titlebar"><span>a-very-normal-rpg.exe</span><span>v3.0</span></div>
     <div id="output" class="output"></div>
     <div class="input-row">
       <span class="prompt-symbol">&gt;</span>
@@ -18,6 +18,13 @@
     </div>
   </div>
 
+<!-- data modules load first (plain scripts, not ES modules, so this still
+     works when opened directly via file:// with no local server) -->
+<script src="data/enemies.js"></script>
+<script src="data/items.js"></script>
+<script src="data/skills.js"></script>
+<script src="data/allies.js"></script>
+<script src="data/events.js"></script>
 <script src="game.js"></script>
 </body>
 </html>
