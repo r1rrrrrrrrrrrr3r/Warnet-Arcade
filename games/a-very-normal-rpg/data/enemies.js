@@ -146,8 +146,8 @@ allEnemies.forEach(e => {
 const TIER_INFO = {
   boss:    { chance: 0.08, scale: 1.35 },
   rare:    { chance: 0.15, scale: 1.15 },
-  strange: { chance: 0.12, scale: 1.10 },
-  normal:  { chance: 0.65, scale: 1.00 }
+  strange: { chance: 0.07, scale: 1.10 },
+  normal:  { chance: 0.70, scale: 1.00 }
 };
 
 function pickTier(){

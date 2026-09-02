@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ApiError, fetchGameBySlug } from '../lib/api'
 import { RichText } from '../components/RichText'
+import LoadingScreen from '../components/LoadingScreen'
 
 interface GameViewModel {
   slug: string
@@ -132,14 +133,7 @@ function GamePage() {
   }, [loadGame])
 
   if (loading) {
-    return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3 px-4 text-center">
-        <p className="font-display text-xs font-semibold uppercase tracking-[0.3em] text-arcade-cyan sm:text-sm">
-          Loading<span className="animate-pulse">_</span>
-        </p>
-        <p className="text-[11px] text-white/50 sm:text-xs">Fetching game data...</p>
-      </div>
-    )
+    return <LoadingScreen title="Loading" subtitle="Fetching game data..." />
   }
 
   if (error || !game) {

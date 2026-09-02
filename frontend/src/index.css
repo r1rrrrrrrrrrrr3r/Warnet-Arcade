@@ -68,6 +68,11 @@
   50% { box-shadow: 0 0 16px currentColor, 0 3px 0 rgba(0, 0, 0, 0.6); }
 }
 
+@keyframes loading-bar-sweep {
+  0% { left: -40%; }
+  100% { left: 100%; }
+}
+
 /* ---------- background ---------- */
 
 .arcade-stage {
@@ -283,6 +288,28 @@
   animation: crt-flicker 7s linear infinite;
 }
 
+/* ---------- loading ---------- */
+
+.loading-bar {
+  position: relative;
+  height: 6px;
+  width: 160px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+}
+
+.loading-bar-fill {
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--arcade-cyan), var(--arcade-purple));
+  box-shadow: 0 0 10px var(--arcade-cyan);
+  animation: loading-bar-sweep 1.4s ease-in-out infinite;
+}
+
 /* ---------- buttons ---------- */
 
 .neon-btn-play {
@@ -374,7 +401,7 @@
   box-shadow: 0 3px 0 rgba(0, 0, 0, 0.6), 0 0 10px currentColor;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
-.arcade-button:hover {
+.arcade-button:hover:not(:disabled) {
   transform: translateY(-1px);
 }
 .arcade-button::before {
@@ -405,7 +432,8 @@
   .marquee-title,
   .crt-scanlines,
   .crt-flicker,
-  .particle {
+  .particle,
+  .loading-bar-fill {
     animation: none !important;
   }
 }

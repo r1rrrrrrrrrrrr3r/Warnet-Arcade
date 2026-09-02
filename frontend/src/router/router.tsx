@@ -4,10 +4,15 @@ import HomePage from '../pages/HomePage'
 import GamePage from '../pages/GamePage'
 import PlayPage from '../pages/PlayPage'
 import NotFoundPage from '../pages/NotFoundPage'
+import { CabinetProvider } from '../context/CabinetContext'
 
 const router = createBrowserRouter([
   {
-    element: <ArcadeLayout />,
+    element: (
+      <CabinetProvider>
+        <ArcadeLayout />
+      </CabinetProvider>
+    ),
     children: [
       { path: '/', element: <HomePage /> },
       { path: '/game/:slug', element: <GamePage /> },

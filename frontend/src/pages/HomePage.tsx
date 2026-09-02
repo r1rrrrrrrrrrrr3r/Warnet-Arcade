@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { fetchGameBySlug, fetchGames, type GameDetail, type GameSummary } from '../lib/api'
+import LoadingScreen from '../components/LoadingScreen'
 
 interface HeroSlide {
   slug: string
@@ -265,14 +266,7 @@ function HomePage() {
   }
 
   if (loading) {
-    return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3 px-4 text-center">
-        <p className="font-display text-xs font-semibold uppercase tracking-[0.3em] text-arcade-cyan sm:text-sm">
-          Loading<span className="animate-pulse">_</span>
-        </p>
-        <p className="text-[11px] text-white/50 sm:text-xs">Booting up the arcade library...</p>
-      </div>
-    )
+    return <LoadingScreen title="Loading" subtitle="Booting up the arcade library..." />
   }
 
   if (error) {

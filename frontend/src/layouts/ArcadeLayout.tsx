@@ -1,18 +1,49 @@
 import { useEffect, useRef } from 'react'
-import { Outlet, useLocation } from 'react-router-dom'
+import { Outlet, useLocation, useMatch, useNavigate } from 'react-router-dom'
+import { useCabinet } from '../context/CabinetContext'
 
 const particleVariants = ['particle-a', 'particle-b', 'particle-c']
 const particleColors = ['#a855f7', '#22e5ff', '#ff2fb0']
-const arcadeButtonColors = ['#ff4d4d', '#ffb020', '#22e5ff', '#ff4d4d', '#ffb020', '#22e5ff']
 
 function ArcadeLayout() {
   const monitorScrollRef = useRef<HTMLDivElement>(null)
   const { pathname } = useLocation()
+  const navigate = useNavigate()
+  const cabinet = useCabinet()
+
+  const gameMatch = useMatch('/game/:slug')
+  const playMatch = useMatch('/play/:slug')
+  const activeSlug = gameMatch?.params.slug ?? playMatch?.params.slug ?? null
+  const slot = activeSlug ? cabinet.slotFor(activeSlug) : null
+  const roomLabel = playMatch ? 'Now Playing' : gameMatch ? 'Viewing' : 'Browsing'
 
   useEffect(() => {
     window.scrollTo(0, 0)
     monitorScrollRef.current?.scrollTo({ top: 0, left: 0 })
   }, [pathname])
+
+  const handleHome = () => navigate('/')
+
+  const deckActions = [
+    { letter: 'B', title: 'Go back', color: '#ff4d4d', onClick: () => navigate(-1) },
+    {
+      letter: 'R',
+      title: 'Random game',
+      color: '#ffb020',
+      onClick: () => {
+        const slug = cabinet.randomSlug(activeSlug ?? undefined)
+        if (slug) navigate(`/game/${slug}`)
+      },
+      disabled: cabinet.games.length === 0,
+    },
+    {
+      letter: 'F',
+      title: 'Fullscreen',
+      color: '#22e5ff',
+      onClick: () => cabinet.requestFullscreen(),
+      disabled: !playMatch,
+    },
+  ]
 
   return (
     <div className="arcade-stage relative h-screen w-screen overflow-hidden">
@@ -65,16 +96,20 @@ function ArcadeLayout() {
               <div className="hidden w-28 shrink-0 flex-col gap-0.5 sm:flex">
                 <div className="stat-box px-2.5 py-0.5">
                   <p className="font-display text-[9px] font-semibold uppercase tracking-widest text-arcade-magenta">
-                    High Score
+                    Library
                   </p>
-                  <p className="font-display text-base font-bold text-white">198900</p>
+                  <p className="font-display text-base font-bold text-white">
+                    {cabinet.gamesLoading ? '...' : String(cabinet.games.length).padStart(2, '0')}
+                  </p>
                 </div>
                 <div className="stat-divider" />
                 <div className="stat-box px-2.5 py-0.5">
                   <p className="font-display text-[9px] font-semibold uppercase tracking-widest text-arcade-cyan">
-                    Credit
+                    Status
                   </p>
-                  <p className="font-display text-base font-bold text-white">00</p>
+                  <p className={`font-display text-base font-bold ${cabinet.apiOnline ? 'text-white' : 'text-red-400'}`}>
+                    {cabinet.apiOnline ? 'Online' : 'Offline'}
+                  </p>
                 </div>
               </div>
 
@@ -93,14 +128,16 @@ function ArcadeLayout() {
                   <p className="font-display text-[9px] font-semibold uppercase tracking-widest text-arcade-cyan">
                     Player One
                   </p>
-                  <p className="font-display text-base font-bold text-arcade-cyan">Ready!</p>
+                  <p className="font-display text-base font-bold text-arcade-cyan">{roomLabel}</p>
                 </div>
                 <div className="stat-divider" />
                 <div className="stat-box px-2.5 py-0.5">
                   <p className="font-display text-[9px] font-semibold uppercase tracking-widest text-arcade-amber">
-                    Course
+                    Slot
                   </p>
-                  <p className="font-display text-base font-bold text-white">1-1</p>
+                  <p className="font-display text-base font-bold text-white">
+                    {slot ? `${slot.index}/${slot.total}` : '--'}
+                  </p>
                 </div>
               </div>
 
@@ -137,13 +174,22 @@ function ArcadeLayout() {
                   aria-hidden="true"
                 />
               </div>
-              <div className="grid grid-cols-3 gap-1" aria-hidden="true">
-                {arcadeButtonColors.map((color, i) => (
-                  <span
-                    key={i}
-                    className="arcade-button relative h-4 w-4"
-                    style={{ backgroundColor: color, color }}
-                  />
+              <div className="grid grid-cols-3 gap-1.5">
+                {deckActions.map((action) => (
+                  <button
+                    key={action.letter}
+                    type="button"
+                    onClick={action.onClick}
+                    disabled={action.disabled}
+                    title={action.title}
+                    aria-label={action.title}
+                    className="arcade-button relative flex h-6 w-6 items-center justify-center transition disabled:cursor-not-allowed disabled:opacity-30"
+                    style={{ backgroundColor: action.color, color: action.color }}
+                  >
+                    <span className="relative z-10 font-display text-[10px] font-bold text-black/70">
+                      {action.letter}
+                    </span>
+                  </button>
                 ))}
               </div>
             </div>
@@ -151,25 +197,32 @@ function ArcadeLayout() {
             <div className="hidden items-center gap-2 lg:flex">
               <div className="led-panel rounded-md px-2.5 py-1 text-center">
                 <p className="font-display text-[9px] font-semibold uppercase tracking-widest text-arcade-amber">
-                  Credit
+                  Slot
                 </p>
-                <p className="font-mono text-base font-bold text-arcade-amber">00</p>
+                <p className="font-mono text-base font-bold text-arcade-amber">
+                  {slot ? `${slot.index}/${slot.total}` : '--'}
+                </p>
               </div>
               <div className="led-panel rounded-md px-2.5 py-1">
                 <p className="font-display text-[11px] font-semibold uppercase tracking-widest text-arcade-cyan">
-                  Insert Coin
+                  {cabinet.apiOnline ? 'System Online' : 'System Offline'}
                 </p>
-                <p className="font-display text-[9px] uppercase tracking-widest text-white/40">To Continue</p>
+                <p className="font-display text-[9px] uppercase tracking-widest text-white/40">
+                  {cabinet.gamesLoading ? 'Syncing library...' : `${cabinet.games.length} games loaded`}
+                </p>
               </div>
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="text-center">
-                <div className="eject-button glow-breathe mx-auto h-5 w-5" aria-hidden="true" />
+              <button type="button" onClick={handleHome} title="Return to the home screen" aria-label="Return home" className="text-center">
+                <div
+                  className="eject-button glow-breathe mx-auto h-5 w-5 transition hover:brightness-125"
+                  aria-hidden="true"
+                />
                 <p className="mt-0.5 font-display text-[8px] font-semibold uppercase tracking-widest text-white/50">
-                  25&cent; Eject
+                  Eject &bull; Home
                 </p>
-              </div>
+              </button>
               <div className="hidden flex-col gap-0.5 rounded-md border border-white/10 bg-black/30 px-2.5 py-1 xl:flex">
                 <p className="font-display text-[9px] font-semibold uppercase tracking-widest text-arcade-magenta">
                   How To Play

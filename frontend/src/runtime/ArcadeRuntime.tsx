@@ -1,4 +1,5 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
+import LoadingScreen from '../components/LoadingScreen'
 
 export type RuntimeStatus = 'loading' | 'ready' | 'error'
 
@@ -173,13 +174,7 @@ const ArcadeRuntime = forwardRef<ArcadeRuntimeHandle, ArcadeRuntimeProps>(
         )}
 
         {status === 'loading' && (
-          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-black/85 px-6 text-center">
-            <p className="font-display text-xs font-semibold uppercase tracking-[0.3em] text-arcade-cyan sm:text-sm">
-              Loading Game<span className="animate-pulse">...</span>
-            </p>
-            <p className="text-[11px] text-white/50 sm:text-xs">Preparing Arcade Machine...</p>
-            <p className="font-mono text-sm tracking-widest text-arcade-cyan sm:text-base">████████░░</p>
-          </div>
+          <LoadingScreen title="Loading Game" subtitle="Preparing Arcade Machine..." variant="overlay" />
         )}
 
         {status === 'error' && (

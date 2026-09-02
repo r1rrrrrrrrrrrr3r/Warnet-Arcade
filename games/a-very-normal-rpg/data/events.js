@@ -1,4 +1,7 @@
 /* ---------- random event encounters ---------- */
+/* outcome.type is interpreted by resolveEventOutcome() in game.js.
+   Events never start combat - they're resolved instantly so the
+   deterministic "3 encounters, then an event" cadence stays clean. */
 
 const EVENTS = [
   {
@@ -46,6 +49,74 @@ const EVENTS = [
     choices: [
       { label: 'Step carefully around it', outcome: { type: 'nothing' } },
       { label: 'Search it anyway', outcome: { type: 'trapOrTreasure' } },
+    ]
+  },
+  {
+    id: 'merchant',
+    title: 'A Traveling Merchant',
+    text: 'A merchant offers you a sealed satchel of supplies.',
+    choices: [
+      { label: 'Buy the mystery satchel', cost: 25, outcome: { type: 'item' } },
+      { label: 'Try to haggle for it instead', outcome: { type: 'haggle' } },
+      { label: 'Just browse and leave', outcome: { type: 'nothing' } },
+    ]
+  },
+  {
+    id: 'well',
+    title: 'An Old Well',
+    text: 'A well hums with strange magic. Coins glint far below.',
+    choices: [
+      { label: 'Toss in a coin and make a wish', cost: 5, outcome: { type: 'wishBuff' } },
+      { label: 'Climb down for the coins', outcome: { type: 'trapOrTreasure' } },
+      { label: 'Walk on', outcome: { type: 'nothing' } },
+    ]
+  },
+  {
+    id: 'campfire',
+    title: 'An Abandoned Campfire',
+    text: 'The embers still glow. Whoever was here left in a hurry - and left supplies.',
+    choices: [
+      { label: 'Search the campsite', outcome: { type: 'item' } },
+      { label: 'Rest by the fire with your party', outcome: { type: 'partyHeal' } },
+      { label: 'Move on quickly', outcome: { type: 'nothing' } },
+    ]
+  },
+  {
+    id: 'library',
+    title: 'A Forgotten Library',
+    text: 'Dusty tomes line the shelves of a ruined library.',
+    choices: [
+      { label: 'Study a tome (learn a skill)', outcome: { type: 'skill' } },
+      { label: 'Search the shelves for potions instead', outcome: { type: 'item' } },
+      { label: 'Leave the dust behind', outcome: { type: 'nothing' } },
+    ]
+  },
+  {
+    id: 'idol',
+    title: 'A Cursed Idol',
+    text: 'An idol radiates unsettling power. Touching it might not be wise.',
+    choices: [
+      { label: 'Take the idol anyway (risky)', outcome: { type: 'curseForPower' } },
+      { label: 'Leave it be', outcome: { type: 'nothing' } },
+    ]
+  },
+  {
+    id: 'twins',
+    title: 'Twin Guardians',
+    text: 'Two spectral guardians block the path, offering a trade: strength for wisdom, or wisdom for strength.',
+    choices: [
+      { label: 'Trade wisdom for strength (+ATK, -Max MP)', outcome: { type: 'statTrade', gain: 'attackPower', lose: 'maxMp' } },
+      { label: 'Trade strength for wisdom (+Max MP, -ATK)', outcome: { type: 'statTrade', gain: 'maxMp', lose: 'attackPower' } },
+      { label: 'Refuse the trade', outcome: { type: 'nothing' } },
+    ]
+  },
+  {
+    id: 'brawler',
+    title: 'A Boastful Brawler',
+    text: 'A brawler challenges you to an arm-wrestle, wagering coin on the outcome.',
+    choices: [
+      { label: 'Wager 20g on your strength', cost: 20, outcome: { type: 'wagerStrength' } },
+      { label: 'Decline the wager', outcome: { type: 'nothing' } },
     ]
   },
 ];
