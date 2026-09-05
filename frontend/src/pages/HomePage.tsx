@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { fetchGameBySlug, fetchGames, type GameDetail, type GameSummary } from '../lib/api'
 import LoadingScreen from '../components/LoadingScreen'
+import { RichText } from '../components/RichText'
 
 interface HeroSlide {
   slug: string
@@ -31,7 +32,8 @@ const accentPalette = [
   { from: '#ffb020', to: '#ff8a1f' },
 ]
 
-const HERO_DESCRIPTION_LIMIT = 160
+const HERO_DESCRIPTION_LIMIT = 355
+
 
 function truncateDescription(text: string, limit = HERO_DESCRIPTION_LIMIT): string {
   if (text.length <= limit) return text
@@ -44,11 +46,12 @@ function accentFor(index: number) {
 
 function toHeroSlide(game: GameDetail, index: number): HeroSlide {
   const accent = accentFor(index)
+  const firstParagraph = (game.description || 'No description available yet.').split('\n\n')[0]
   return {
     slug: game.slug,
     title: game.title.toUpperCase(),
     engine: game.engine,
-    description: truncateDescription(game.description || 'No description available yet.'),
+    description: truncateDescription(firstParagraph),
     coverImage: game.coverImage,
     accentFrom: accent.from,
     accentTo: accent.to,
@@ -218,12 +221,8 @@ function HomePage() {
       const gameList = await fetchGames()
       setGames(gameList)
       setCurrentSlide(0)
-
-      // GET /games does not return "description", which the hero carousel
-      // requires. Fetching full details for the hero candidates only
-      // (capped at 3) is currently the minimum amount of extra requests
-      // possible under the existing API contract.
-      const heroCandidates = gameList.slice(0, 3)
+      const featuredGames = gameList.filter((game) => game.featured)
+      const heroCandidates = featuredGames.length > 0 ? featuredGames : gameList.slice(0, 3)
       const heroDetails = await Promise.all(
         heroCandidates.map((game) => fetchGameBySlug(game.slug))
       )
@@ -336,7 +335,7 @@ function HomePage() {
             <p className="font-display text-xs font-semibold uppercase tracking-[0.2em] text-arcade-cyan">
               {slide.engine}
             </p>
-            <p className="max-w-sm text-xs leading-relaxed text-white/70">{slide.description}</p>
+            <RichText text={slide.description} className="max-w-sm" />
             <div className="mt-1 flex flex-wrap gap-2">
               <Link
                 to={`/game/${slide.slug}`}

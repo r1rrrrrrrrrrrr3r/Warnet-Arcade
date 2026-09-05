@@ -6,6 +6,7 @@ export interface GameSummary {
   slug: string
   coverImage: string | null
   engine: string
+  featured: boolean
 }
 
 export interface GameDetail extends GameSummary {
@@ -48,6 +49,7 @@ interface RawGameSummary {
   slug: string
   coverImage: string
   engine: string
+  featured: boolean
 }
 
 interface RawGameDetail extends RawGameSummary {
