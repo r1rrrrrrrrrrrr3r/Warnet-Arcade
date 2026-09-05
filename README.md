@@ -24,8 +24,8 @@ A browser arcade cabinet that serves a library of small games (Scratch, Unity We
 ## Installation
 
 ```bash
-git clone <this-repo>
-cd <this-repo>
+git clone https://github.com/r1rrrrrrrrrrrr3r/Warnet-Arcade.git
+cd Warnet-Arcade
 
 cd backend
 npm install
