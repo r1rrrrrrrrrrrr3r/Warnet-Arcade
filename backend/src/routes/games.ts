@@ -11,7 +11,8 @@ export default async function gameRoutes(server: FastifyInstance) {
         title: true,
         slug: true,
         coverImage: true,
-        engine: true
+        engine: true,
+        featured: true
       }
     });
     return games;
