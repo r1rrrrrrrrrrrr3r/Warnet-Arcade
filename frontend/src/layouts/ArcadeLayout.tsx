@@ -36,13 +36,6 @@ function ArcadeLayout() {
       },
       disabled: cabinet.games.length === 0,
     },
-    {
-      letter: 'F',
-      title: 'Fullscreen',
-      color: '#22e5ff',
-      onClick: () => cabinet.requestFullscreen(),
-      disabled: !playMatch,
-    },
   ]
 
   return (
@@ -161,20 +154,15 @@ function ArcadeLayout() {
           </div>
 
           <div className="control-deck hidden shrink-0 items-center justify-between gap-3 rounded-2xl px-4 py-1.5 sm:py-2 md:flex">
-            <div className="flex items-end gap-4">
-              <div className="relative h-9 w-9 shrink-0">
-                <div className="joystick-base absolute inset-0" aria-hidden="true" />
-                <div className="joystick-gate absolute inset-[18%]" aria-hidden="true" />
-                <div
-                  className="joystick-shaft absolute left-1/2 top-1/2 h-5 w-1 -translate-x-1/2 -translate-y-full -rotate-6"
-                  aria-hidden="true"
-                />
-                <div
-                  className="joystick-ball absolute left-1/2 top-0 h-3 w-3 -translate-x-1/2 -translate-y-[80%] -rotate-6"
-                  aria-hidden="true"
-                />
+            <div className="flex items-center gap-6">
+              <div className="dpad-shell relative h-14 w-14 shrink-0" aria-hidden="true">
+                <div className="dpad-pad absolute left-1/2 top-1 h-4 w-4 -translate-x-1/2 rounded-sm" />
+                <div className="dpad-pad absolute bottom-1 left-1/2 h-4 w-4 -translate-x-1/2 rounded-sm" />
+                <div className="dpad-pad absolute left-1 top-1/2 h-4 w-4 -translate-y-1/2 rounded-sm" />
+                <div className="dpad-pad absolute right-1 top-1/2 h-4 w-4 -translate-y-1/2 rounded-sm" />
+                <div className="dpad-center absolute h-5 w-5" />
               </div>
-              <div className="grid grid-cols-3 gap-1.5">
+              <div className="flex items-center gap-4">
                 {deckActions.map((action) => (
                   <button
                     key={action.letter}
@@ -183,10 +171,17 @@ function ArcadeLayout() {
                     disabled={action.disabled}
                     title={action.title}
                     aria-label={action.title}
-                    className="arcade-button relative flex h-6 w-6 items-center justify-center transition disabled:cursor-not-allowed disabled:opacity-30"
-                    style={{ backgroundColor: action.color, color: action.color }}
+                    className="analog-button relative flex h-12 w-12 items-center justify-center transition disabled:cursor-not-allowed sm:h-14 sm:w-14"
                   >
-                    <span className="relative z-10 font-display text-[10px] font-bold text-black/70">
+                    <span
+                      className="pointer-events-none absolute inset-1.5 rounded-full"
+                      style={{ boxShadow: `0 0 0 2px ${action.color}66 inset` }}
+                      aria-hidden="true"
+                    />
+                    <span
+                      className="relative z-10 font-display text-base font-bold sm:text-lg"
+                      style={{ color: action.color }}
+                    >
                       {action.letter}
                     </span>
                   </button>
