@@ -8,6 +8,7 @@ interface HeroSlide {
   slug: string
   title: string
   engine: string
+  genre: string
   description: string
   coverImage: string | null
   accentFrom: string
@@ -18,6 +19,7 @@ interface FeaturedGame {
   slug: string
   title: string
   engine: string
+  genre: string
   coverImage: string | null
   accentFrom: string
   accentTo: string
@@ -33,7 +35,7 @@ const accentPalette = [
 ]
 
 const HERO_DESCRIPTION_LIMIT = 355
-
+const HERO_AUTO_ADVANCE_MS = 7000
 
 function truncateDescription(text: string, limit = HERO_DESCRIPTION_LIMIT): string {
   if (text.length <= limit) return text
@@ -51,6 +53,7 @@ function toHeroSlide(game: GameDetail, index: number): HeroSlide {
     slug: game.slug,
     title: game.title.toUpperCase(),
     engine: game.engine,
+    genre: game.genre,
     description: truncateDescription(firstParagraph),
     coverImage: game.coverImage,
     accentFrom: accent.from,
@@ -64,6 +67,7 @@ function toFeaturedGame(game: GameSummary, index: number): FeaturedGame {
     slug: game.slug,
     title: game.title,
     engine: game.engine,
+    genre: game.genre,
     coverImage: game.coverImage,
     accentFrom: accent.from,
     accentTo: accent.to,
@@ -150,6 +154,22 @@ function HeroCoverPlaceholder({ slide }: { slide: HeroSlide }) {
   )
 }
 
+function EnginePill({ label }: { label: string }) {
+  return (
+    <span className="inline-flex items-center rounded-full border border-arcade-amber/40 bg-black/30 px-2 py-0.5 text-[9px] font-semibold uppercase leading-none tracking-widest text-arcade-amber sm:text-[10px]">
+      {label}
+    </span>
+  )
+}
+
+function GenrePill({ label }: { label: string }) {
+  return (
+    <span className="inline-flex items-center rounded-full border border-arcade-purple/40 bg-black/30 px-2 py-0.5 text-[9px] font-semibold uppercase leading-none tracking-widest text-arcade-purple sm:text-[10px]">
+      {label}
+    </span>
+  )
+}
+
 function GameCard({ game, isActive }: { game: FeaturedGame; isActive?: boolean }) {
   const hasCover = Boolean(game.coverImage)
 
@@ -197,8 +217,59 @@ function GameCard({ game, isActive }: { game: FeaturedGame; isActive?: boolean }
       <div>
         <p className="truncate font-display text-xs font-bold text-white sm:text-sm">{game.title}</p>
         <p className="truncate text-[9px] uppercase tracking-wide text-white/50 sm:text-[10px]">
-          {game.engine}
+          {game.engine} &bull; {game.genre}
         </p>
+      </div>
+    </Link>
+  )
+}
+
+function LibraryCard({ game }: { game: FeaturedGame }) {
+  const hasCover = Boolean(game.coverImage)
+
+  return (
+    <Link
+      to={`/game/${game.slug}`}
+      className="game-card group flex flex-col overflow-hidden rounded-xl border border-white/10 bg-gradient-to-b from-white/[0.04] to-transparent transition hover:border-arcade-cyan/40 hover:shadow-[0_0_20px_rgba(34,229,255,0.15)]"
+    >
+      <div className="relative aspect-[3/4] overflow-hidden border-b border-white/10">
+        {hasCover ? (
+          <>
+            <img
+              src={game.coverImage as string}
+              alt={`${game.title} cover art`}
+              loading="lazy"
+              className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+            />
+            <div className="pointer-events-none absolute inset-0 shadow-[inset_0_0_30px_rgba(0,0,0,0.6)]" />
+          </>
+        ) : (
+          <div
+            className="absolute inset-0"
+            style={{ background: `linear-gradient(150deg, ${game.accentFrom}33, ${game.accentTo}33)` }}
+          >
+            <div
+              className="absolute inset-0"
+              style={{
+                background: `radial-gradient(circle at 30% 20%, ${game.accentFrom}aa, transparent 60%), radial-gradient(circle at 80% 85%, ${game.accentTo}aa, transparent 60%)`,
+              }}
+            />
+            <div className="absolute inset-0 shadow-[inset_0_0_30px_rgba(0,0,0,0.6)]" />
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 px-2 text-center">
+              <NoCoverIcon className="h-6 w-6 text-white/40" />
+              <p className="font-display text-[9px] font-semibold uppercase tracking-widest text-white/40">
+                No Cover Available
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+      <div className="flex flex-1 flex-col gap-1.5 p-2.5">
+        <p className="truncate font-display text-xs font-bold text-white sm:text-sm">{game.title}</p>
+        <div className="flex flex-wrap items-center gap-1.5">
+          <EnginePill label={game.engine} />
+          <GenrePill label={game.genre} />
+        </div>
       </div>
     </Link>
   )
@@ -208,6 +279,7 @@ function HomePage() {
   const rowRef = useRef<HTMLDivElement>(null)
   const [currentSlide, setCurrentSlide] = useState(0)
   const [animKey, setAnimKey] = useState(0)
+  const [isHeroPaused, setIsHeroPaused] = useState(false)
 
   const [games, setGames] = useState<GameSummary[]>([])
   const [heroSlides, setHeroSlides] = useState<HeroSlide[]>([])
@@ -249,6 +321,17 @@ function HomePage() {
 
   const nextSlide = () => goToSlide(currentSlide + 1)
   const prevSlide = () => goToSlide(currentSlide - 1)
+
+  // Auto-advance the hero carousel, pausing while the user is hovering
+  // or has focused a control inside it (e.g. via keyboard navigation).
+  useEffect(() => {
+    if (heroSlides.length <= 1 || isHeroPaused) return
+    const timer = window.setInterval(() => {
+      setCurrentSlide((current) => (current + 1) % heroSlides.length)
+      setAnimKey((k) => k + 1)
+    }, HERO_AUTO_ADVANCE_MS)
+    return () => window.clearInterval(timer)
+  }, [heroSlides.length, isHeroPaused, currentSlide])
 
   const handleHeroKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === 'ArrowRight') {
@@ -295,6 +378,11 @@ function HomePage() {
     )
   }
 
+  const libraryGames = games.map((game, index) => toFeaturedGame(game, index))
+  const featuredOnly = games
+    .filter((game) => game.featured)
+    .map((game, index) => toFeaturedGame(game, index))
+
   return (
     <>
       {/* Scoped keyframes for the carousel's slide-in transition */}
@@ -327,14 +415,19 @@ function HomePage() {
           aria-label="Featured games"
           tabIndex={0}
           onKeyDown={handleHeroKeyDown}
+          onMouseEnter={() => setIsHeroPaused(true)}
+          onMouseLeave={() => setIsHeroPaused(false)}
+          onFocus={() => setIsHeroPaused(true)}
+          onBlur={() => setIsHeroPaused(false)}
         >
           <div key={`text-${animKey}`} className="hero-slide-enter flex w-full flex-col gap-2 md:w-2/5">
             <h2 className="bg-gradient-to-r from-arcade-magenta via-arcade-amber to-arcade-cyan bg-clip-text font-arcade text-2xl leading-tight text-transparent [text-shadow:3px_3px_0_rgba(0,0,0,0.4)] sm:text-3xl">
               {slide.title}
             </h2>
-            <p className="font-display text-xs font-semibold uppercase tracking-[0.2em] text-arcade-cyan">
-              {slide.engine}
-            </p>
+            <div className="flex items-center gap-2">
+              <EnginePill label={slide.engine} />
+              <GenrePill label={slide.genre} />
+            </div>
             <RichText text={slide.description} className="max-w-sm" />
             <div className="mt-1 flex flex-wrap gap-2">
               <Link
@@ -400,40 +493,58 @@ function HomePage() {
         </div>
       )}
 
-      <section className="px-3 pb-6 sm:px-6">
+      {featuredOnly.length > 0 && (
+        <section className="px-3 pb-6 sm:px-6">
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="font-display text-sm font-semibold uppercase tracking-[0.2em] text-white/90">
+              Featured Games
+            </h3>
+            <div className="hidden items-center gap-2 sm:flex">
+              <button
+                type="button"
+                onClick={() => scrollRow('left')}
+                aria-label="Scroll featured games left"
+                className="chevron-btn flex h-6 w-6 items-center justify-center rounded-full text-white/60"
+              >
+                <ChevronIcon direction="left" />
+              </button>
+              <button
+                type="button"
+                onClick={() => scrollRow('right')}
+                aria-label="Scroll featured games right"
+                className="chevron-btn flex h-6 w-6 items-center justify-center rounded-full text-white/60"
+              >
+                <ChevronIcon direction="right" />
+              </button>
+            </div>
+          </div>
+          <div
+            ref={rowRef}
+            className="flex gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          >
+            {featuredOnly.map((game) => (
+              <GameCard
+                key={game.slug}
+                game={game}
+                isActive={slide ? game.slug === slide.slug : false}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      <section className="px-3 pb-8 sm:px-6">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="font-display text-sm font-semibold uppercase tracking-[0.2em] text-white/90">
-            Featured Games
+            All Games
           </h3>
-          <div className="hidden items-center gap-2 sm:flex">
-            <button
-              type="button"
-              onClick={() => scrollRow('left')}
-              aria-label="Scroll featured games left"
-              className="chevron-btn flex h-6 w-6 items-center justify-center rounded-full text-white/60"
-            >
-              <ChevronIcon direction="left" />
-            </button>
-            <button
-              type="button"
-              onClick={() => scrollRow('right')}
-              aria-label="Scroll featured games right"
-              className="chevron-btn flex h-6 w-6 items-center justify-center rounded-full text-white/60"
-            >
-              <ChevronIcon direction="right" />
-            </button>
-          </div>
+          <p className="text-[10px] uppercase tracking-widest text-white/40">
+            {libraryGames.length} {libraryGames.length === 1 ? 'game' : 'games'}
+          </p>
         </div>
-        <div
-          ref={rowRef}
-          className="flex gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        >
-          {games.map((game, index) => (
-            <GameCard
-              key={game.slug}
-              game={toFeaturedGame(game, index)}
-              isActive={slide ? game.slug === slide.slug : false}
-            />
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+          {libraryGames.map((game) => (
+            <LibraryCard key={game.slug} game={game} />
           ))}
         </div>
       </section>

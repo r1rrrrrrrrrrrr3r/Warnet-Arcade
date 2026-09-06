@@ -9,7 +9,7 @@ interface GameViewModel {
   title: string
   tagline: string
   engine: string
-  genres: string[]
+  genre: string
   howToPlay: string
   devComment: string
   coverImage: string | null
@@ -74,15 +74,17 @@ function GameCoverPlaceholder({ game }: { game: GameViewModel }) {
   )
 }
 
-function Badge({ label, tone }: { label: string; tone: 'engine' | 'genre' }) {
+function EnginePill({ label }: { label: string }) {
   return (
-    <span
-      className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[9px] font-semibold uppercase tracking-widest sm:text-[10px] ${
-        tone === 'engine'
-          ? 'border-arcade-amber/40 bg-black/30 text-arcade-amber'
-          : 'border-arcade-cyan/40 bg-black/30 text-arcade-cyan'
-      }`}
-    >
+    <span className="inline-flex items-center rounded-full border border-arcade-amber/40 bg-black/30 px-2.5 py-1 text-[9px] font-semibold uppercase leading-none tracking-widest text-arcade-amber sm:text-[10px]">
+      {label}
+    </span>
+  )
+}
+
+function GenrePill({ label }: { label: string }) {
+  return (
+    <span className="inline-flex items-center rounded-full border border-arcade-cyan/40 bg-black/30 px-2.5 py-1 text-[9px] font-semibold uppercase leading-none tracking-widest text-arcade-cyan sm:text-[10px]">
       {label}
     </span>
   )
@@ -108,7 +110,7 @@ function GamePage() {
         title: data.title,
         tagline: data.description || TAGLINE_PLACEHOLDER,
         engine: data.engine,
-        genres: [GENRE_PLACEHOLDER],
+        genre: data.genre || GENRE_PLACEHOLDER,
         howToPlay: data.howToPlay,
         devComment: data.devComment,
         coverImage: data.coverImage,
@@ -189,10 +191,8 @@ function GamePage() {
           </h1>
           <RichText text={game.tagline} className="max-w-md" />
           <div className="flex flex-wrap justify-center gap-2 md:justify-start">
-            <Badge label={game.engine} tone="engine" />
-            {game.genres.map((genre) => (
-              <Badge key={genre} label={genre} tone="genre" />
-            ))}
+            <EnginePill label={game.engine} />
+            <GenrePill label={game.genre} />
           </div>
         </div>
       </section>

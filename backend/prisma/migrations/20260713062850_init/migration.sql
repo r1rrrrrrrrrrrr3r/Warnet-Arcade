@@ -21,3 +21,6 @@ ALTER TABLE "Game" ADD COLUMN "devComment" TEXT NOT NULL DEFAULT '';
 
 -- AlterTable
 ALTER TABLE "Game" ADD COLUMN "howToPlay" TEXT NOT NULL DEFAULT '';
+
+-- AlterTable
+ALTER TABLE "Game" ADD COLUMN "genre" TEXT NOT NULL DEFAULT 'Arcade';

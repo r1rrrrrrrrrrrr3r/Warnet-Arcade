@@ -157,6 +157,7 @@ const ArcadeRuntime = forwardRef<ArcadeRuntimeHandle, ArcadeRuntimeProps>(
             src={entryFile}
             title={title}
             allow="fullscreen; autoplay"
+            scrolling="no"
             onLoad={() => updateStatus('ready')}
             onError={() => updateStatus('error')}
             className={useLockedSize ? 'block border-0' : 'block h-full w-full border-0'}
@@ -167,8 +168,9 @@ const ArcadeRuntime = forwardRef<ArcadeRuntimeHandle, ArcadeRuntimeProps>(
                     height: locked.height,
                     transform: `scale(${fullscreenScale})`,
                     transformOrigin: 'center center',
+                    overflow: 'hidden',
                   }
-                : undefined
+                : { overflow: 'hidden' }
             }
           />
         )}

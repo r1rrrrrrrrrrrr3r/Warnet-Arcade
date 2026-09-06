@@ -16,6 +16,7 @@ model Game {
   howToPlay   String
   coverImage  String
   engine      String
+  genre       String   @default("Arcade")
   entryFile   String
   featured    Boolean  @default(false)
   published   Boolean  @default(false)

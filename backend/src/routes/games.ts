@@ -12,6 +12,7 @@ export default async function gameRoutes(server: FastifyInstance) {
         slug: true,
         coverImage: true,
         engine: true,
+        genre: true,
         featured: true
       }
     });
@@ -39,15 +40,11 @@ export default async function gameRoutes(server: FastifyInstance) {
     });
 
     if (!game) {
-      return reply.status(404).send({
-        message: "Game not found"
-      });
+      return reply.status(404).send({ message: "Game not found" });
     }
 
     if (!game.published) {
-      return reply.status(404).send({
-        message: "Game not found"
-      });
+      return reply.status(404).send({ message: "Game not found" });
     }
 
     return {
@@ -59,6 +56,7 @@ export default async function gameRoutes(server: FastifyInstance) {
       devComment: game.devComment,
       coverImage: game.coverImage,
       engine: game.engine,
+      genre: game.genre,
       entryFile: game.entryFile,
       featured: game.featured
     };

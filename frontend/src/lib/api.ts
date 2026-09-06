@@ -6,6 +6,7 @@ export interface GameSummary {
   slug: string
   coverImage: string | null
   engine: string
+  genre: string
   featured: boolean
 }
 
@@ -49,6 +50,7 @@ interface RawGameSummary {
   slug: string
   coverImage: string
   engine: string
+  genre: string
   featured: boolean
 }
 
